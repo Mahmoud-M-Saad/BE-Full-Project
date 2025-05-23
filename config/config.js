@@ -1,16 +1,19 @@
 const dotenv = require("dotenv");
 dotenv.config();
+const { PORT, JWT_SECRET, MODE, DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_TYPE, DB_SSL } = process.env;
 
 const config = {
-  port: process.env.PORT || 5001,
-  jwtSecret: process.env.JWT_SECRET,
-  mode: process.env.MODE || 'development',
+  port: PORT || 5001,
+  jwtSecret: JWT_SECRET,
+  mode: MODE || 'development',
   db: {
-    database: process.env.DB_NAME,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST || 'localhost',
-    dialect: 'postgres',
+    url: `${DB_TYPE}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}`,
+    database: DB_NAME,
+    username: DB_USER,
+    password: DB_PASSWORD,
+    host: DB_HOST || 'localhost',
+    dialect: DB_TYPE || 'postgres',
+    ssl: DB_SSL === 'true'? {require: true, rejectUnauthorized: false} : "",
   },
 };
 
