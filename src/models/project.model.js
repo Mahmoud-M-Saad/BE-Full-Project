@@ -1,17 +1,19 @@
-module.exports = (sequelize, Sequelize) => {
+module.exports = (sequelize, DataTypes) => {
   const Project = sequelize.define('Project', {
     name: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     description: {
-      type: Sequelize.TEXT,
+      type: DataTypes.TEXT,
     },
     status: {
-      type: Sequelize.ENUM('Open', 'In Progress', 'Completed', 'Cancelled', 'On Hold', 'Done'),
+      type: DataTypes.ENUM('Open', 'In Progress', 'Completed', 'Cancelled', 'On Hold', 'Done'),
       defaultValue: 'Open',
     },
+  }, {
+    tableName: 'projects',
+    timestamps: true,
   });
-
   return Project;
 };

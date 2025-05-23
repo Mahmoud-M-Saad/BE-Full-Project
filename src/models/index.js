@@ -26,9 +26,10 @@ fs.readdirSync(__dirname)
     (file) => file.endsWith('.model.js') && file !== basename
   )
   .forEach((file) => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize);
-    const modelName = model.name || path.basename(file, '.model.js');
-    db[modelName.charAt(0).toUpperCase() + modelName.slice(1)] = model;
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    // const modelName = model.name || path.basename(file, '.model.js');
+    // db[modelName.charAt(0).toUpperCase() + modelName.slice(1)] = model;
+    db[model.name] = model;
   });
 
 // Define associations (example)

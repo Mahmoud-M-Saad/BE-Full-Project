@@ -1,24 +1,26 @@
-module.exports = (sequelize, Sequelize) => {
+module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     username: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: true,
       unique: true,
     },
     email: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: true,
       unique: true,
     },
     password: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: true,
     },
     role: {
-      type: Sequelize.ENUM('super_admin', 'admin', 'employee', 'customer', 'guest'),
+      type: DataTypes.ENUM('super_admin', 'admin', 'employee', 'customer', 'guest'),
       defaultValue: 'guest',
     },
+  }, {
+    tableName: 'users',
+    timestamps: true
   });
-
   return User;
 };

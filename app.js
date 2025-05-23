@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 //! Swagger Docs
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use('/swagger-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 //! Mount all routes
 app.use('/v1', routes);
