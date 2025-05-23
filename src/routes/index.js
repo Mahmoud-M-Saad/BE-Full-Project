@@ -2,7 +2,10 @@
 const express = require('express');
 const router = express.Router();
 
-const userRoute = require('./user.route');
+const userRoute = require('./user.routes');
+const productRoute = require('./product.routes');
+const projectRoute = require('./project.routes');
+const taskRoute = require('./task.routes');
 const { main_seed, seed_all } = require('../seeders/seedAll');
 
 router.get(`/`, async (req, res) => {
@@ -15,5 +18,8 @@ router.get(`/`, async (req, res) => {
 });
 
 router.use(`/user`, userRoute);
+router.use(`/product`, productRoute);
+router.use(`/project`, projectRoute);
+router.use(`/task`, taskRoute);
 
 module.exports = router;

@@ -62,8 +62,8 @@ const seed_all = async () => {
 
         //! Example: Seed tasks //! For employees
         await Task.bulkCreate([
-            { name:"Task 1", userId: 2, title: "Task 1", description: "Description for Task 1", status: "In Progress" },
-            { name:"Task 2", userId: 2, title: "Task 2", description: "Description for Task 2", status: "Completed" },
+            { name:"Task 1", userId: 2, title: "Task 1", description: "Description for Task 1", status: "In Progress", projectId: 1 },
+            { name:"Task 2", userId: 2, title: "Task 2", description: "Description for Task 2", status: "Completed", projectId: 2 },
         ]);
 
         //! Example: Seed products

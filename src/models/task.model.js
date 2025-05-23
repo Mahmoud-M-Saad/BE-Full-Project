@@ -1,17 +1,19 @@
-module.exports = (sequelize, Sequelize) => {
+module.exports = (sequelize, DataTypes) => {
   const Task = sequelize.define('Task', {
     name: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: false,
     },
     description: {
-      type: Sequelize.TEXT,
+      type: DataTypes.TEXT,
     },
     status: {
-      type: Sequelize.ENUM('Open', 'In Progress', 'Completed', 'Cancelled', 'On Hold', 'Done'),
+      type: DataTypes.ENUM('Open', 'In Progress', 'Completed', 'Cancelled', 'On Hold', 'Done'),
       defaultValue: 'Open',
     },
+  }, {
+    tableName: 'tasks',
+    timestamps: true
   });
-
   return Task;
 };
