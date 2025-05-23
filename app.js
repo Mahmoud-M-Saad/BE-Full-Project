@@ -20,6 +20,7 @@ app.use('/swagger-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 //! Mount all routes
 app.use('/v1', routes);
+console.log("Running on Node.js version:", process.version);
 
 //! Sync DB
 db.sequelize
