@@ -115,21 +115,21 @@ exports.forgotPassword = async (email) => {
   }
 };
 
-exports.resetPassword = async ({ token, email, oldPassword, password, confirmPassword }) => {
+exports.resetPassword = async ({ resetToken, email, oldPassword, newPassword, confirmPassword }) => {
   try {
     try {
-      verifyPassword(password, confirmPassword);
+      verifyPassword(newPassword, confirmPassword);
     } catch (validationError) {
       return { error: validationError.message };
     }
 
     let user;
 
-    if (token && email) {
-      // Token-based reset (from email)
+    if (resetToken && email) {
+      // resetToken-based reset (from email)
       const users = await User.findAll({ where: { email, resetPasswordExpires: { [db.Sequelize.Op.gt]: Date.now() } } });
       for (const u of users) {
-        const match = await bcrypt.compare(token, u.resetPasswordToken);
+        const match = await bcrypt.compare(resetToken, u.resetPasswordToken);
         if (match) {
           user = u;
           break;
@@ -147,7 +147,7 @@ exports.resetPassword = async ({ token, email, oldPassword, password, confirmPas
       return { error: 'Invalid request.' };
     }
 
-    user.password = await bcrypt.hash(password, 10);
+    user.password = await bcrypt.hash(newPassword, 10);
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
 

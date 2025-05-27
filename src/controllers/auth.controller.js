@@ -52,12 +52,12 @@ exports.forgotPassword = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
   try {
-    const { resetToken, newPassword, confirmPassword } = req.body;
-    if (!resetToken || !newPassword || !confirmPassword) {
-      return responseHandler.error(res, "Token, new password, and confirm password are required.", 400);
+    const { email, newPassword, confirmPassword } = req.body;
+    if (!email || !newPassword || !confirmPassword) {
+      return responseHandler.error(res, "Email, new password, and confirm password are required.", 400);
     }
 
-    const result = await resetPassword(resetToken, newPassword, confirmPassword);
+    const result = await resetPassword(req.body);
     if (result.error) return responseHandler.error(res, result.error, 400);
     return responseHandler.success(res, null, "Password reset successful.");
   } catch (err) {
