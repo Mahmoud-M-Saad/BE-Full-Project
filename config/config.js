@@ -2,7 +2,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_TYPE, DB_SSL } = process.env;
 const { PORT, JWT_SECRET, MODE, JWT_ENCRYPTION_KEY, JWT_ALGORITHM_KEY } = process.env;
-const { GMAIL_USER, GMAIL_PASS, FRONTEND_LINK } = process.env;
+const { EMAIL_USER, EMAIL_PASS, FRONTEND_LINK } = process.env;
 
 const config = {
   port: PORT || 5001,
@@ -12,8 +12,8 @@ const config = {
   mode: MODE || 'development',
   frontEndLink: FRONTEND_LINK,
   email: {
-    user: GMAIL_USER,
-    pass: GMAIL_PASS
+    user: EMAIL_USER,
+    pass: EMAIL_PASS
   },
   db: {
     url: `${DB_TYPE}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}`,

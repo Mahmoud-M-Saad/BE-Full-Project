@@ -5,7 +5,7 @@ const crypto = require('crypto');
 
 const timestamp = new Date().toISOString();
 const ctx = "src/auth.service.js";
-const { encryptToken } = require('../utils/generateToken');
+const { encryptToken, decryptToken } = require('../utils/generateToken');
 const { sendResetEmail } = require('../utils/nodemailer');
 const { frontEndLink } = require('../../config/config');
 
@@ -92,21 +92,24 @@ exports.login = async (email, password) => {
   }
 };
 
-exports.forgotPassword = async (email) => {
+exports.forgotPassword = async (userEmail) => {
   try {
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email: userEmail } });
     if (!user) return { error: 'Email not found.' };
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetTokenHash = await bcrypt.hash(resetToken, 10);
-    user.resetPasswordToken = resetTokenHash;
+    const emailToken = crypto.randomBytes(32).toString('hex');
+    const emailTokenHash = await bcrypt.hash(emailToken, 10);
+    user.resetPasswordToken = emailTokenHash;
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+    const resetToken = await encryptToken({ email: userEmail, emailToken });
 
     const savedUser = await user.save();
     if (!savedUser) return { error: 'Failed to save reset token.' };
 
-    const resetLink = `${frontEndLink}/reset-password?resetToken=${resetToken}&email=${email}`;
-    await sendResetEmail(email, resetLink);
+    const resetLink = `${frontEndLink}/reset-password?resetToken=${resetToken}`;
+    const info = await sendResetEmail(userEmail, resetLink);
+    console.log(`Reset email sent: ${info}`);
 
     return { success: true };
   } catch (err) {
@@ -115,7 +118,7 @@ exports.forgotPassword = async (email) => {
   }
 };
 
-exports.resetPassword = async ({ resetToken, email, oldPassword, newPassword, confirmPassword }) => {
+exports.resetPassword = async ({ resetToken, oldPassword, newPassword, confirmPassword }) => {
   try {
     try {
       verifyPassword(newPassword, confirmPassword);
@@ -124,12 +127,13 @@ exports.resetPassword = async ({ resetToken, email, oldPassword, newPassword, co
     }
 
     let user;
+    const { emailToken, email } = await decryptToken(resetToken);
 
-    if (resetToken && email) {
-      // resetToken-based reset (from email)
+    if (emailToken && email) {
+      // emailToken-based reset (from email)
       const users = await User.findAll({ where: { email, resetPasswordExpires: { [db.Sequelize.Op.gt]: Date.now() } } });
       for (const u of users) {
-        const match = await bcrypt.compare(resetToken, u.resetPasswordToken);
+        const match = await bcrypt.compare(emailToken, u.resetPasswordToken);
         if (match) {
           user = u;
           break;
@@ -139,6 +143,9 @@ exports.resetPassword = async ({ resetToken, email, oldPassword, newPassword, co
 
     } else if (oldPassword && email) {
       // Authenticated change via old password
+      if( oldPassword === newPassword) {
+        return { error: 'New password cannot be the same as the old password.' };
+      }
       user = await User.findOne({ where: { email } });
       if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
         return { error: 'Old password is incorrect.' };
