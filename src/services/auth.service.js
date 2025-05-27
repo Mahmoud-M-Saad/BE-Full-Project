@@ -105,7 +105,7 @@ exports.forgotPassword = async (email) => {
     const savedUser = await user.save();
     if (!savedUser) return { error: 'Failed to save reset token.' };
 
-    const resetLink = `${frontEndLink}?resetToken=${resetToken}&email=${email}`;
+    const resetLink = `${frontEndLink}/reset-password?resetToken=${resetToken}&email=${email}`;
     await sendResetEmail(email, resetLink);
 
     return { success: true };
