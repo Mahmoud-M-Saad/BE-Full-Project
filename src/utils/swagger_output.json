@@ -126,6 +126,9 @@
                 },
                 "confirmPassword": {
                   "example": "any"
+                },
+                "oldPassword": {
+                  "example": "any"
                 }
               }
             }
