@@ -18,6 +18,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('super_admin', 'admin', 'employee', 'customer', 'guest'),
       defaultValue: 'guest',
     },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    secretKey: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   }, {
     tableName: 'users',
     timestamps: true

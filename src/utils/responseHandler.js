@@ -18,7 +18,7 @@ exports.error = (res, error, statusCode = 500, message = "An error occurred.") =
   console.error(error);
   return res.status(statusCode).json({
     status: "Error",
-    message: error.message || message,
+    message: error.message || error || message,
     data: null,
   });
 };

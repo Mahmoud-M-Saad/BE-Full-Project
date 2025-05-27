@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
+const authRoute = require('./auth.routes');
 const userRoute = require('./user.routes');
 const productRoute = require('./product.routes');
 const projectRoute = require('./project.routes');
@@ -17,6 +18,7 @@ router.get(`/`, async (req, res) => {
   }
 });
 
+router.use(`/auth`, authRoute);
 router.use(`/user`, userRoute);
 router.use(`/product`, productRoute);
 router.use(`/project`, projectRoute);
