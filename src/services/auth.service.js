@@ -118,7 +118,7 @@ exports.forgotPassword = async (userEmail) => {
   }
 };
 
-exports.resetPassword = async ({ resetToken, oldPassword, newPassword, confirmPassword }) => {
+exports.resetPassword = async ( resetToken, oldPassword, newPassword, confirmPassword ) => {
   try {
     try {
       verifyPassword(newPassword, confirmPassword);
