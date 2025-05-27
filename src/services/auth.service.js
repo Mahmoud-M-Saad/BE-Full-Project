@@ -82,10 +82,10 @@ exports.login = async (email, password) => {
       payload.secretKey = user.secretKey;
     }
 
-    const token = await encryptToken(payload);
+    const { token, expiresIn } = await encryptToken(payload);
     delete user.dataValues.password;
-    
-    return { user, token };
+
+    return { user, token, expiresIn };
   } catch (err) {
     console.error(`[${timestamp} - ${ctx}] login fn. Error: `, err.message);
     return { error: 'An unexpected error occurred during login.' };
@@ -102,7 +102,7 @@ exports.forgotPassword = async (userEmail) => {
     user.resetPasswordToken = emailTokenHash;
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
 
-    const resetToken = await encryptToken({ email: userEmail, emailToken });
+    const { resetToken } = await encryptToken({ email: userEmail, emailToken });
 
     const savedUser = await user.save();
     if (!savedUser) return { error: 'Failed to save reset token.' };

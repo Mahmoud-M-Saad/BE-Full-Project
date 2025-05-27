@@ -28,7 +28,8 @@ exports.encryptToken = async (payload) => {
   try {
     const { encrypted, iv } = encryptPayload(payload);
     const token = jwt.sign({ data: encrypted, iv }, jwtSecret, { expiresIn: '1d' });
-    return token;
+    const expiresIn = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 1 day expiration
+    return { token, expiresIn };
   } catch (err) {
     console.error(`encryptToken Error: `, err.message);
     return { error: 'An unexpected error occurred during token encryption.' };
