@@ -27,9 +27,9 @@ const verifyPassword = (password, confirmPassword) => {
   }
 }
 
-exports.signup = async (username, email, password, confirmPassword, superAdminKey, role) => {
+exports.signup = async (userData) => {
   try {
-    const userData = { username, email, password, confirmPassword, superAdminKey, role };
+    const { username, email, password, confirmPassword, role } = userData;
     const existingUser = await User.findOne({
       where: {
         [db.Sequelize.Op.or]: [
@@ -50,7 +50,7 @@ exports.signup = async (username, email, password, confirmPassword, superAdminKe
     }
     if (role) {
       userData.role = role;
-      const key = await User.findOne({ where: { role: 'super_admin', secretKey: superAdminKey } });
+      const key = await User.findOne({ where: { role: 'super_admin', secretKey: userData.superAdminKey } });
       if (!key) return { error: 'Invalid super admin key.' };
 
       if (role === 'super_admin') {

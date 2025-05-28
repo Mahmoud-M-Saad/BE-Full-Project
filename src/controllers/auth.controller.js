@@ -11,7 +11,7 @@ exports.signup = async (req, res) => {
       return responseHandler.error(res, "Invalid role or missing super admin key.", 400);
     }
 
-    const user = await signup(username, email, password, confirmPassword, superAdminKey, role);
+    const user = await signup(req.body);
     if (user.error) return responseHandler.error(res, user.error, 400);
     return responseHandler.created(res, user, "Check your email for the confirmation link to complete the signup process.");
   } catch (err) {
