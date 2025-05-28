@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
   const Staff = sequelize.define('Staff', {
     department: {
-      type: DataTypes.ENUM('HR', 'IT', 'Finance', 'Marketing', 'Sales', 'Front-end', 'Back-end', 'DevOps'),
+      type: DataTypes.STRING,
       allowNull: true,
     },
     experience: {
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     employmentType: {
-      type: DataTypes.ENUM('part-time', 'full-time', 'freelancer', 'per-job'),
+      type: DataTypes.STRING, // e.g., 'full-time', 'part-time', 'contract'
       allowNull: true,
     }
   }, {
