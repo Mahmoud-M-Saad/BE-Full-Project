@@ -57,8 +57,8 @@ exports.signup = async (username, email, password, confirmPassword, superAdminKe
     }
     userData.password = await bcrypt.hash(password, 10);
 
-    const { creationToken } = await encryptToken(userData);
-    const creationLink = `${frontEndLink}/confirm-signup?creationToken=${creationToken}`;
+    const { token } = await encryptToken(userData);
+    const creationLink = `${frontEndLink}/confirm-signup?creationToken=${token}`;
     const info = await sendResetEmail(email, creationLink, username);
     return { success: true };
   } catch (err) {

@@ -1,11 +1,12 @@
 const userService = require('../services/user.service');
 const responseHandler = require('../utils/responseHandler');
+const { decryptToken } = require('../utils/generateToken');
 
 // Create User
 exports.createUser = async (req, res) => {
   try {
-    const { creationToken } = req.headers;
-    const userData = await decryptToken(creationToken);
+    const { creation_token } = req.headers;
+    const userData = await decryptToken(creation_token);
     const user = await userService.createUser(userData);
     return responseHandler.created(res, user, "User created successfully.");
   } catch (err) {

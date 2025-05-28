@@ -45,6 +45,12 @@
                 },
                 "confirmPassword": {
                   "example": "any"
+                },
+                "superAdminKey": {
+                  "example": "any"
+                },
+                "role": {
+                  "example": "any"
                 }
               }
             }
@@ -144,6 +150,13 @@
     "/v1/user/": {
       "post": {
         "description": "",
+        "parameters": [
+          {
+            "name": "creationToken",
+            "in": "header",
+            "type": "string"
+          }
+        ],
         "responses": {
           "default": {
             "description": ""
