@@ -52,6 +52,10 @@ exports.signup = async (username, email, password, confirmPassword, superAdminKe
       userData.role = role;
       const key = await User.findOne({ where: { role: 'super_admin', secretKey: superAdminKey } });
       if (!key) return { error: 'Invalid super admin key.' };
+
+      if (role === 'super_admin') {
+        userData.secretKey = crypto.randomBytes(32).toString('hex');
+      }
     } else {
       userData.role = 'customer';
     }
