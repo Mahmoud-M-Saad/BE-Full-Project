@@ -59,7 +59,7 @@ exports.signup = async (username, email, password, confirmPassword, superAdminKe
 
     const { creationToken } = await encryptToken(userData);
     const creationLink = `${frontEndLink}/confirm-signup?creationToken=${creationToken}`;
-    const info = await sendResetEmail(userEmail, creationLink, username);
+    const info = await sendResetEmail(email, creationLink, username);
     return { success: true };
   } catch (err) {
     console.error(`[${timestamp} - ${ctx}] signup fn. Error: `, err.message);
