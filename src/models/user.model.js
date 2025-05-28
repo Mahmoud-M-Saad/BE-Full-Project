@@ -14,6 +14,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    phone: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    secAddress: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },    
     role: {
       type: DataTypes.ENUM('super_admin', 'admin', 'employee', 'customer', 'guest'),
       defaultValue: 'guest',

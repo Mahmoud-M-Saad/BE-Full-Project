@@ -29,6 +29,7 @@ fs.readdirSync(__dirname)
 
 // Define associations (example)
 db.Project && db.User && db.Project.belongsTo(db.User, { foreignKey: 'userId', as: 'owner' });
+db.Staff && db.User && db.Staff.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
 db.Task && db.Project && db.Task.belongsTo(db.Project, { foreignKey: 'projectId' });
 
 module.exports = db;

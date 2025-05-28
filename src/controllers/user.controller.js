@@ -11,7 +11,7 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// Get All Users
+//~ 100%  Get All Users
 exports.getUsers = async (req, res) => {
   try {
     const users = await userService.getUsers();
@@ -21,11 +21,11 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-// Get User by ID
+//~ 100% Get User by ID
 exports.getUserById = async (req, res) => {
   try {
     const user = await userService.getUserById(req.params.id);
-    if (!user) return responseHandler.error(res, new Error('User not found'), 404);
+    if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
     return responseHandler.success(res, user);
   } catch (err) {
     return responseHandler.error(res, err);
@@ -36,7 +36,7 @@ exports.getUserById = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const user = await userService.updateUser(req.params.id, req.body);
-    if (!user) return responseHandler.error(res, new Error('User not found'), 404);
+    if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
     return responseHandler.success(res, user, "User updated successfully.");
   } catch (err) {
     return responseHandler.error(res, err, 400);

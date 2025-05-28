@@ -1,19 +1,31 @@
 const db = require('../models');
-const User = db.User;
+const { User, Staff } = db;
+
 
 // Create User
 exports.createUser = async (userData) => {
   return await User.create(userData);
 };
 
-// Get All Users
+//~ 100%  Get All Users
 exports.getUsers = async () => {
-  return await User.findAll();
+  return await User.findAll({ attributes: ['id', 'username', 'email', 'phone', 'address', 'secAddress', 'role'] });
 };
 
-// Get User by ID
+//~ 100% Get User by ID 
 exports.getUserById = async (id) => {
-  return await User.findByPk(id);
+  try {
+    const user = await User.findOne({ where: { id }, attributes: ['id','username', 'email', 'phone', 'address', 'secAddress', 'role'] });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const extraData = await Staff.findOne({ where: { userId: id }, attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'userId'] } });
+
+    return { ...user.dataValues, ...extraData ? extraData.dataValues : {} };
+  } catch (error) {
+    return { error: error.message };
+  }
 };
 
 // Update User
