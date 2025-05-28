@@ -6,7 +6,7 @@ const { createUser, getUsers, getUserById, updateUser, deleteUser } = require('.
 const { validateAdminCreate, validateAdminUpdate } = require('../middlewares/validators/user.validator');
 
 //! basic CRUD routes
-router.post('/', validateAdminCreate, createUser);
+router.post('/', createUser);
 router.get('/', getUsers);
 router.get('/:id', getUserById);
 router.put('/:id', validateAdminUpdate, updateUser);

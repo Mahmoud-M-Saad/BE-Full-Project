@@ -27,9 +27,9 @@ const verifyPassword = (password, confirmPassword) => {
   }
 }
 
-exports.signup = async (userData) => {
+exports.signup = async (username, email, password, confirmPassword, superAdminKey, role) => {
   try {
-    const { username, email, password, confirmPassword } = userData;
+    const userData = { username, email, password, confirmPassword, superAdminKey, role };
     const existingUser = await User.findOne({
       where: {
         [db.Sequelize.Op.or]: [
@@ -38,26 +38,29 @@ exports.signup = async (userData) => {
         ]
       }
     });
-
-    if (existingUser) {
-      return { error: 'Sorry, Your email or username already exists.' };
-    }
-
+    if (existingUser) return { error: 'Sorry, Your email or username already exists.' };
     if (username.length < 3 || !/[A-Z]/.test(username)) {
       return { error: 'Username must be at least 3 characters long and include at least one uppercase letter' };
     }
-
     try {
       verifyEmail(email);
       verifyPassword(password, confirmPassword);
     } catch (validationError) {
       return { error: validationError.message };
     }
-
-    userData.role = 'customer';
+    if (role) {
+      userData.role = role;
+      const key = await User.findOne({ where: { role: 'super_admin', secretKey: superAdminKey } });
+      if (!key) return { error: 'Invalid super admin key.' };
+    } else {
+      userData.role = 'customer';
+    }
     userData.password = await bcrypt.hash(password, 10);
-    const user = await User.create(userData);
-    return user || { error: 'Failed to create user.' };
+
+    const { creationToken } = await encryptToken(userData);
+    const creationLink = `${frontEndLink}/confirm-signup?creationToken=${creationToken}`;
+    const info = await sendResetEmail(userEmail, creationLink, username);
+    return { success: true };
   } catch (err) {
     console.error(`[${timestamp} - ${ctx}] signup fn. Error: `, err.message);
     return { error: 'An unexpected error occurred during signup.' };

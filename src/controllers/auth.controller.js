@@ -3,14 +3,17 @@ const responseHandler = require('../utils/responseHandler');
 
 exports.signup = async (req, res) => {
   try {
-    const { username, email, password, confirmPassword } = req.body;
+    const { username, email, password, confirmPassword, superAdminKey, role } = req.body;
     if (!username || !email || !password || !confirmPassword) {
       return responseHandler.error(res, "Username, Email, Password, and Confirm Password are required.", 400);
     }
+    if (role && !['super_admin', 'admin', 'employee'].includes(role) && !superAdminKey) {
+      return responseHandler.error(res, "Invalid role or missing super admin key.", 400);
+    }
 
-    const user = await signup(req.body);
+    const user = await signup(username, email, password, confirmPassword, superAdminKey, role);
     if (user.error) return responseHandler.error(res, user.error, 400);
-    return responseHandler.created(res, user, "User registered successfully.");
+    return responseHandler.created(res, user, "Check your email for the confirmation link to complete the signup process.");
   } catch (err) {
     console.error("File: auth.controller.js, Function: signup, Error:", err.message);
     return responseHandler.error(res, "An unexpected error occurred.", 500);

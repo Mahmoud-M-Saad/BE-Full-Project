@@ -4,7 +4,9 @@ const responseHandler = require('../utils/responseHandler');
 // Create User
 exports.createUser = async (req, res) => {
   try {
-    const user = await userService.createUser(req.body);
+    const { creationToken } = req.headers;
+    const userData = await decryptToken(creationToken);
+    const user = await userService.createUser(userData);
     return responseHandler.created(res, user, "User created successfully.");
   } catch (err) {
     return responseHandler.error(res, err, 400);
