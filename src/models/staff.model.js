@@ -23,6 +23,14 @@ module.exports = (sequelize, DataTypes) => {
     employmentType: {
       type: DataTypes.STRING, // e.g., 'full-time', 'part-time', 'contract'
       allowNull: true,
+    },
+    projectIds: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER), // Array of project IDs
+      allowNull: true,
+    },
+    taskIds: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER), // Array of task IDs
+      allowNull: true,
     }
   }, {
     tableName: 'staff',

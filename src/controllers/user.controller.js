@@ -1,4 +1,5 @@
-const userService = require('../services/user.service');
+const { createUser, getUsers, getUserById, updateUser, deleteUser } = require('../services/user.service');
+const { getPermissionByUserId, updatePermissionByUserId } = require('../services/permission.service');
 const responseHandler = require('../utils/responseHandler');
 const { decryptToken } = require('../utils/generateToken');
 
@@ -7,17 +8,17 @@ exports.createUser = async (req, res) => {
   try {
     const { creation_token } = req.headers;
     const userData = await decryptToken(creation_token);
-    const user = await userService.createUser(userData);
+    const user = await createUser(userData);
     return responseHandler.created(res, user, "User created successfully.");
   } catch (err) {
     return responseHandler.error(res, err, 400);
   }
 };
 
-//~ 100%  Get All Users
+//~ 100% Get All Users
 exports.getUsers = async (req, res) => {
   try {
-    const users = await userService.getUsers();
+    const users = await getUsers();
     return responseHandler.success(res, users);
   } catch (err) {
     return responseHandler.error(res, err);
@@ -27,7 +28,7 @@ exports.getUsers = async (req, res) => {
 //~ 100% Get User by ID
 exports.getUserById = async (req, res) => {
   try {
-    const user = await userService.getUserById(req.params.id);
+    const user = await getUserById(req.params.id);
     if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
     return responseHandler.success(res, user);
   } catch (err) {
@@ -38,7 +39,7 @@ exports.getUserById = async (req, res) => {
 // Update User
 exports.updateUser = async (req, res) => {
   try {
-    const user = await userService.updateUser(req.params.id, req.body);
+    const user = await updateUser(req.params.id, req.body);
     if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
     return responseHandler.success(res, user, "User updated successfully.");
   } catch (err) {
@@ -49,10 +50,40 @@ exports.updateUser = async (req, res) => {
 // Delete User
 exports.deleteUser = async (req, res) => {
   try {
-    const result = await userService.deleteUser(req.params.id);
+    const result = await deleteUser(req.params.id);
     if (!result) return responseHandler.error(res, new Error('User not found'), 404);
     return responseHandler.success(res, null, "User deleted successfully.");
   } catch (err) {
     return responseHandler.error(res, err);
+  }
+};
+
+//~ 100% Get Permission by User ID
+exports.getPermissionByUserId = async (req, res) => {
+  try {
+    const permission = await getPermissionByUserId(req.params.userId);
+    if (permission.error) return responseHandler.error(res, new Error('Permission not found'), 404);
+    return responseHandler.success(res, permission);
+  } catch (err) {
+    return responseHandler.error(res, err);
+  }
+};
+
+//~ 100% Update Permission by User ID
+exports.updatePermissionByUserId = async (req, res) => {
+  try {
+    const { secretKey } = req.body;
+    if (!secretKey) return responseHandler.error(res, new Error('Secret key is required'), 400);
+
+    const user = await getUserById(req.params.userId);
+    if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
+    if (user.role !== 'super_admin' || user.secretKey !== req.body.secretKey)
+      return responseHandler.error(res, new Error('Only Super Admins can update permissions or Secret key is invalid'), 403);
+
+    const permission = await updatePermissionByUserId(req.params.userId, req.body);
+    if (permission.error) return responseHandler.error(res, new Error('Permission not found'), 404);
+    return responseHandler.success(res, permission, "Permission updated successfully.");
+  } catch (err) {
+    return responseHandler.error(res, err, 400);
   }
 };

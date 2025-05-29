@@ -147,12 +147,12 @@
         }
       }
     },
-    "/v1/user/": {
+    "/v1/user/createUser": {
       "post": {
         "description": "",
         "parameters": [
           {
-            "name": "creationToken",
+            "name": "creation_token",
             "in": "header",
             "type": "string"
           }
@@ -162,7 +162,9 @@
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/v1/user/": {
       "get": {
         "description": "",
         "responses": {

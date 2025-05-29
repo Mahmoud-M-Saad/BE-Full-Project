@@ -15,14 +15,20 @@ exports.getUsers = async () => {
 //~ 100% Get User by ID 
 exports.getUserById = async (id) => {
   try {
-    const user = await User.findOne({ where: { id }, attributes: ['id','username', 'email', 'phone', 'address', 'secAddress', 'role'] });
-    if (!user) {
-      throw new Error('User not found');
-    }
+    const user = await User.findOne({where:{ id }, attributes:{exclude:['password', 'resetPasswordToken', 'resetPasswordExpires']}});
+    if (!user) throw new Error('User not found');
 
-    const extraData = await Staff.findOne({ where: { userId: id }, attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'userId'] } });
+    const staffData = await Staff.findOne({where:{ userId: id }, attributes:{exclude:['id', 'createdAt', 'updatedAt', 'userId']}});
+    if (!staffData) return user;
+    
+    const [ tasks, projects] = await Promise.all([
+      staffData.projectIds ? db.Project.findAll({ where: { id: staffData.projectIds } }) : [],
+      staffData.taskIds ? db.Task.findAll({ where: { id: staffData.taskIds } }) : []
+    ]);
+    delete staffData.dataValues.projectIds;
+    delete staffData.dataValues.taskIds;
 
-    return { ...user.dataValues, ...extraData ? extraData.dataValues : {} };
+    return { ...user.dataValues, ...staffData.dataValues, projects, tasks };
   } catch (error) {
     return { error: error.message };
   }
