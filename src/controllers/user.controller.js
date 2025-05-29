@@ -61,10 +61,12 @@ exports.deleteUser = async (req, res) => {
 //~ 100% Get Permission by User ID
 exports.getPermissionByUserId = async (req, res) => {
   try {
+    console.log('Fetching permission for userId:', req.params.userId); // Debugging log
     const permission = await getPermissionByUserId(req.params.userId);
     if (permission.error) return responseHandler.error(res, new Error('Permission not found'), 404);
     return responseHandler.success(res, permission);
   } catch (err) {
+    console.error('Error fetching permission:', err.message); // Debugging log
     return responseHandler.error(res, err);
   }
 };
@@ -75,7 +77,7 @@ exports.updatePermissionByUserId = async (req, res) => {
     const { secretKey } = req.body;
     if (!secretKey) return responseHandler.error(res, new Error('Secret key is required'), 400);
 
-    const user = await getUserById(req.params.userId);
+    const user = await decryptToken(req.headers.token);
     if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
     if (user.role !== 'super_admin' || user.secretKey !== req.body.secretKey)
       return responseHandler.error(res, new Error('Only Super Admins can update permissions or Secret key is invalid'), 403);
