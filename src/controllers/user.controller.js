@@ -77,9 +77,15 @@ exports.updatePermissionByUserId = async (req, res) => {
     const { secretKey } = req.body;
     if (!secretKey) return responseHandler.error(res, new Error('Secret key is required'), 400);
 
-    const user = await decryptToken(req.headers.token);
-    if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
-    if (user.role !== 'super_admin' || user.secretKey !== req.body.secretKey)
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) return responseHandler.error(res, new Error('Authorization header is missing'), 401);
+
+    const token = authHeader.split('Bearer ')[1];
+    if (!token) return responseHandler.error(res, new Error('Bearer token is missing'), 401);
+
+    const user = await decryptToken(token);
+    if (user.error) return responseHandler.error(res, new Error('Invalid or expired token'), 401);
+    if (user.role !== 'super_admin' || user.secretKey !== secretKey)
       return responseHandler.error(res, new Error('Only Super Admins can update permissions or Secret key is invalid'), 403);
 
     const permission = await updatePermissionByUserId(req.params.userId, req.body);
