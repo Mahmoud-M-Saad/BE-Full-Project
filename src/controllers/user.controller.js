@@ -20,8 +20,21 @@ const checkPermission = async (req, res, userId, action) => {
   }
 };
 
-// Create User
+//~ 100% Create User
 exports.createUser = async (req, res) => {
+  try {
+    const permissionError = await checkPermission(req, res, req.params.id, "create");
+    if (permissionError) return;
+    
+    const user = await createUser(req.body);
+    return responseHandler.created(res, user, "User created successfully.");
+  } catch (err) {
+    return responseHandler.error(res, err, 400);
+  }
+};
+
+//~ 100% Create User by Sign Up Link
+exports.createUserBySignUpLink = async (req, res) => {
   try {
     const permissionError = await checkPermission(req, res, req.params.id, "create");
     if (permissionError) return;
