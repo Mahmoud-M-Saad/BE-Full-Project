@@ -11,7 +11,8 @@ const productSchema = {
     ],
     description: [
         { type: 'trim' },
-        { type: 'isString', message: 'Invalid description' }
+        { type: 'isString', message: 'Invalid description' },
+        { type: 'notEmpty', message: 'Description required' }
     ]
 };
 

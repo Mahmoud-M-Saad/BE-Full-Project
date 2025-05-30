@@ -1,5 +1,5 @@
 const db = require('../models');
-const { User, Staff } = db;
+const { User, Staff, Project, Task } = db;
 
 
 // Create User
@@ -21,9 +21,9 @@ exports.getUserById = async (id) => {
     const staffData = await Staff.findOne({where:{ userId: id }, attributes:{exclude:['id', 'createdAt', 'updatedAt', 'userId']}});
     if (!staffData) return user;
     
-    const [ tasks, projects] = await Promise.all([
-      staffData.projectIds ? db.Project.findAll({ where: { id: staffData.projectIds } }) : [],
-      staffData.taskIds ? db.Task.findAll({ where: { id: staffData.taskIds } }) : []
+    const [ projects, tasks ] = await Promise.all([
+      staffData.projectIds ? Project.findAll({ where: { id: staffData.projectIds } }) : [],
+      staffData.taskIds ? Task.findAll({ where: { id: staffData.taskIds } }) : []
     ]);
     delete staffData.dataValues.projectIds;
     delete staffData.dataValues.taskIds;
@@ -37,7 +37,7 @@ exports.getUserById = async (id) => {
 // Update User
 exports.updateUser = async (id, userData) => {
   await User.update(userData, { where: { id } });
-  return await User.findByPk(id);
+  return await getUserById(id);
 };
 
 // Delete User

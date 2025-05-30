@@ -4,12 +4,13 @@ const { createTask, getTasks, getTask, updateTask, deleteTask } = require('../co
 
 //! middleware validation function
 const { validateTaskCreate, validateTaskUpdate } = require('../middlewares/validators/task.validator');
+const { isAuth } = require('../middlewares/auth.middleware');
 
 //! basic CRUD routes
-router.post('/', validateTaskCreate, createTask);
-router.get('/', getTasks);
-router.get('/:id', getTask);
-router.put('/:id', validateTaskUpdate, updateTask);
-router.delete('/:id', deleteTask);
+router.post('/', isAuth, validateTaskCreate, createTask);
+router.get('/', isAuth, getTasks);
+router.get('/:id', isAuth, getTask);
+router.put('/:id', isAuth, validateTaskUpdate, updateTask);
+router.delete('/:id', isAuth, deleteTask);
 
 module.exports = router;

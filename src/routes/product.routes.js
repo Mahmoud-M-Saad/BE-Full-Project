@@ -4,12 +4,13 @@ const { createProduct, getProducts, getProduct, updateProduct, deleteProduct } =
 
 //! middleware validation function
 const { validateProductCreate, validateProductUpdate } = require('../middlewares/validators/product.validator');
+const { isAuth } = require('../middlewares/auth.middleware');
 
 //! basic CRUD routes
-router.post('/', validateProductCreate, createProduct);
-router.get('/', getProducts);
-router.get('/:id', getProduct);
-router.put('/:id', validateProductUpdate, updateProduct);
-router.delete('/:id', deleteProduct);
+router.post('/', isAuth, validateProductCreate, createProduct);
+router.get('/', isAuth, getProducts);
+router.get('/:id', isAuth, getProduct);
+router.put('/:id', isAuth, validateProductUpdate, updateProduct);
+router.delete('/:id', isAuth, deleteProduct);
 
 module.exports = router;

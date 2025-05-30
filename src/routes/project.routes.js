@@ -4,12 +4,13 @@ const { createProject, getProjects, getProject, updateProject, deleteProject } =
 
 //! middleware validation function
 const { validateProjectCreate, validateProjectUpdate } = require('../middlewares/validators/project.validator');
+const { isAuth } = require('../middlewares/auth.middleware');
 
 //! basic CRUD routes
-router.post('/', validateProjectCreate, createProject);
-router.get('/', getProjects);
-router.get('/:id', getProject);
-router.put('/:id', validateProjectUpdate, updateProject);
-router.delete('/:id', deleteProject);
+router.post('/', isAuth, validateProjectCreate, createProject);
+router.get('/', isAuth, getProjects);
+router.get('/:id', isAuth, getProject);
+router.put('/:id', isAuth, updateProject);
+router.delete('/:id', isAuth, deleteProject);
 
 module.exports = router;

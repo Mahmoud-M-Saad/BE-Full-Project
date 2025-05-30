@@ -1,18 +1,24 @@
 const { generateValidation, handleValidationErrors } = require('./validationUtils');
 
+const allowedStatuses = ['Open', 'In Progress', 'Completed', 'Cancelled', 'On Hold', 'Done'];
 const projectSchema = {
     name: [
-        { type: 'trim' },
+        { type: 'trim' },                                     // Remove leading/trailing spaces
         { type: 'isString', message: 'Invalid project name' },
         { type: 'notEmpty', message: 'Project name required' }
     ],
-    status: [
-        { type: 'notEmpty', message: 'Status required' }
-    ],
     description: [
         { type: 'trim' },
-        { type: 'isString', message: 'Invalid description' }
-    ]
+        { type: 'isString', message: 'Invalid description' },
+        { type: 'notEmpty', message: 'Description required' }
+    ],
+    status: [
+        {
+            type: 'isIn',
+            values: allowedStatuses,
+            message: `Invalid status. Allowed values: ${allowedStatuses.join(', ')}`
+        }
+    ],
 };
 
 exports.validateProjectCreate = [

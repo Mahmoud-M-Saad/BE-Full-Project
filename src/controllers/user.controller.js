@@ -3,11 +3,32 @@ const { getPermissionByUserId, updatePermissionByUserId } = require('../services
 const responseHandler = require('../utils/responseHandler');
 const { decryptToken } = require('../utils/generateToken');
 
+const checkPermission = async (req, res, userId, action) => {
+  const userPermission = req.user.permissions;
+  const userToUpdate = await getUserById(userId);
+  if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
+
+  const targetRole = userToUpdate.role;
+  if (targetRole === "admin" && !userPermission.writeAdmin) {
+    return responseHandler.error(res, new Error(`You do not have permission to ${action} an admin user. Ask your Admin.`), 403);
+  }
+  if (targetRole === "employee" && !userPermission.writeEmployee) {
+    return responseHandler.error(res, new Error(`You do not have permission to ${action} an employee user. Ask your Admin.`), 403);
+  }
+  if (targetRole === "super_admin" && (!req.user.secretKey || req.user.secretKey !== req.body.secretKey)) {
+    return responseHandler.error(res, new Error(`You do not have permission or invalid secret key to ${action}.`), 403);
+  }
+};
+
 // Create User
 exports.createUser = async (req, res) => {
   try {
+    const permissionError = await checkPermission(req, res, req.params.id, "create");
+    if (permissionError) return;
+
     const { creation_token } = req.headers;
     const userData = await decryptToken(creation_token);
+    
     const user = await createUser(userData);
     return responseHandler.created(res, user, "User created successfully.");
   } catch (err) {
@@ -39,6 +60,9 @@ exports.getUserById = async (req, res) => {
 // Update User
 exports.updateUser = async (req, res) => {
   try {
+    const permissionError = await checkPermission(req, res, req.params.id, "update");
+    if (permissionError) return;
+
     const user = await updateUser(req.params.id, req.body);
     if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
     return responseHandler.success(res, user, "User updated successfully.");
@@ -50,6 +74,9 @@ exports.updateUser = async (req, res) => {
 // Delete User
 exports.deleteUser = async (req, res) => {
   try {
+    const permissionError = await checkPermission(req, res, req.params.id, "delete");
+    if (permissionError) return;
+
     const result = await deleteUser(req.params.id);
     if (!result) return responseHandler.error(res, new Error('User not found'), 404);
     return responseHandler.success(res, null, "User deleted successfully.");
@@ -74,20 +101,6 @@ exports.getPermissionByUserId = async (req, res) => {
 //~ 100% Update Permission by User ID
 exports.updatePermissionByUserId = async (req, res) => {
   try {
-    const { secretKey } = req.body;
-    if (!secretKey) return responseHandler.error(res, new Error('Secret key is required'), 400);
-
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return responseHandler.error(res, new Error('Authorization header is missing'), 401);
-
-    const token = authHeader.split('Bearer ')[1];
-    if (!token) return responseHandler.error(res, new Error('Bearer token is missing'), 401);
-
-    const user = await decryptToken(token);
-    if (user.error) return responseHandler.error(res, new Error('Invalid or expired token'), 401);
-    if (user.role !== 'super_admin' || user.secretKey !== secretKey)
-      return responseHandler.error(res, new Error('Only Super Admins can update permissions or Secret key is invalid'), 403);
-
     const permission = await updatePermissionByUserId(req.params.userId, req.body);
     if (permission.error) return responseHandler.error(res, new Error('Permission not found'), 404);
     return responseHandler.success(res, permission, "Permission updated successfully.");
