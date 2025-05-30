@@ -1,10 +1,44 @@
 const db = require('../models');
 const { User, Staff, Project, Task } = db;
-
-
+const { verifyEmail, verifyPassword } = require('../services/auth.service');
 // Create User
 exports.createUser = async (userData) => {
-  return await User.create(userData);
+  try {
+    const { username, email, password, confirmPassword, role } = userData;
+    const existingUser = await User.findOne({
+      where: {
+        [db.Sequelize.Op.or]: [
+          { email: email },
+          { username: username }
+        ]
+      }
+    });
+    if (existingUser) return { error: 'Sorry, This email or username already exists.' };
+    if (username.length < 3 || !/[A-Z]/.test(username)) {
+      return { error: 'Username must be at least 3 characters long and include at least one uppercase letter' };
+    }
+    try {
+      verifyEmail(email);
+      verifyPassword(password, confirmPassword);
+    } catch (validationError) {
+      return { error: validationError.message };
+    }
+    if (role) {
+      userData.role = role;
+      const key = await User.findOne({ where: { role: 'super_admin', secretKey: userData.superAdminKey } });
+      if (!key) return { error: 'Invalid super admin key.' };
+
+      if (role === 'super_admin') {
+        userData.secretKey = crypto.randomBytes(32).toString('hex');
+      }
+    } else {
+      userData.role = 'customer';
+    }
+    userData.password = await bcrypt.hash(password, 10);
+    return await User.create(userData);
+  } catch (error) {
+    
+  }
 };
 
 //~ 100%  Get All Users
