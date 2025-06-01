@@ -1,33 +1,40 @@
-const { createUser, getUsers, getUserById, updateUser, deleteUser } = require('../services/user.service');
-const { getPermissionByUserId, updatePermissionByUserId } = require('../services/permission.service');
+const { checkPermission, createUser, getUsers, getUserById, updateUser, deleteUser } = require('../services/user.service');
+const { getDefaultPermissions, createPermission } = require('../services/permission.service');
 const responseHandler = require('../utils/responseHandler');
 const { decryptToken } = require('../utils/generateToken');
 
-const checkPermission = async (req, res, userId, action) => {
-  const userPermission = req.user.permissions;
-  const userToUpdate = await getUserById(userId);
-  if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
-
-  const targetRole = userToUpdate.role;
-  if (targetRole === "admin" && !userPermission.writeAdmin) {
-    return responseHandler.error(res, new Error(`You do not have permission to ${action} an admin user. Ask your Admin.`), 403);
-  }
-  if (targetRole === "employee" && !userPermission.writeEmployee) {
-    return responseHandler.error(res, new Error(`You do not have permission to ${action} an employee user. Ask your Admin.`), 403);
-  }
-  if (targetRole === "super_admin" && (!req.user.secretKey || req.user.secretKey !== req.body.secretKey)) {
-    return responseHandler.error(res, new Error(`You do not have permission or invalid secret key to ${action}.`), 403);
-  }
-};
-
 //~ 100% Create User
-exports.createUser = async (req, res) => {
+exports.createUserByForm = async (req, res) => {
   try {
-    const permissionError = await checkPermission(req, res, req.params.id, "create");
+    const { body } = req;
+
+    const permissionError = await checkPermission(req, res, body.id, "create");
     if (permissionError) return;
+
+    const requiredFields = [
+      'username', 'email', 'password', 'confirmPassword',
+      'department', 'experience', 'skills',
+      'salary', 'appointmentDate', 'employmentType'
+    ];
+
+    const missingFields = requiredFields.filter(field => !body[field]);
+    if (missingFields.length > 0) {
+      return responseHandler.error(res, new Error(`Missing fields: ${missingFields.join(', ')}`), 400);
+    }
+
+    const user = await createUser(body);
+    if (user.error) return responseHandler.error(res, new Error(user.error), 400);
     
-    const user = await createUser(req.body);
-    return responseHandler.created(res, user, "User created successfully.");
+    if (!body.permissions) body.permissions = getDefaultPermissions(body.role);
+    const [ staffData, permissionData ] = await Promise.all([
+      createStaff(body, user.id),
+      createPermission(body.permissions, user.id)
+    ]);
+
+    if (staffData?.error) return responseHandler.error(res, new Error(staffData.error), 400);
+    if (permissionData?.error) return responseHandler.error(res, new Error(permissionData.error), 400);
+
+    return responseHandler.created(res, user, "User and staff created successfully.");
   } catch (err) {
     return responseHandler.error(res, err, 400);
   }
@@ -36,9 +43,6 @@ exports.createUser = async (req, res) => {
 //~ 100% Create User by Sign Up Link
 exports.createUserBySignUpLink = async (req, res) => {
   try {
-    const permissionError = await checkPermission(req, res, req.params.id, "create");
-    if (permissionError) return;
-
     const { creation_token } = req.headers;
     const userData = await decryptToken(creation_token);
     
@@ -95,29 +99,5 @@ exports.deleteUser = async (req, res) => {
     return responseHandler.success(res, null, "User deleted successfully.");
   } catch (err) {
     return responseHandler.error(res, err);
-  }
-};
-
-//~ 100% Get Permission by User ID
-exports.getPermissionByUserId = async (req, res) => {
-  try {
-    console.log('Fetching permission for userId:', req.params.userId); // Debugging log
-    const permission = await getPermissionByUserId(req.params.userId);
-    if (permission.error) return responseHandler.error(res, new Error('Permission not found'), 404);
-    return responseHandler.success(res, permission);
-  } catch (err) {
-    console.error('Error fetching permission:', err.message); // Debugging log
-    return responseHandler.error(res, err);
-  }
-};
-
-//~ 100% Update Permission by User ID
-exports.updatePermissionByUserId = async (req, res) => {
-  try {
-    const permission = await updatePermissionByUserId(req.params.userId, req.body);
-    if (permission.error) return responseHandler.error(res, new Error('Permission not found'), 404);
-    return responseHandler.success(res, permission, "Permission updated successfully.");
-  } catch (err) {
-    return responseHandler.error(res, err, 400);
   }
 };

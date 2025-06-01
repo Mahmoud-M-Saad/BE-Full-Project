@@ -9,7 +9,7 @@ const { encryptToken, decryptToken } = require('../utils/generateToken');
 const { sendResetEmail } = require('../utils/nodemailer');
 const { frontEndLink } = require('../../config/config');
 
-const verifyEmail = (email) => {
+exports.verifyEmail = (email) => {
   // const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
   if (!emailRegex.test(email)) {
@@ -17,7 +17,13 @@ const verifyEmail = (email) => {
   }
 }
 
-const verifyPassword = (password, confirmPassword) => {
+exports.verifyUsername = (username) => {
+  if (username.length < 3 || !/[A-Z]/.test(username)) {
+    throw new Error('Username must be at least 3 characters long and include at least one uppercase letter');
+  }
+}
+
+exports.verifyPassword = (password, confirmPassword) => {
   if (password !== confirmPassword) {
     throw new Error('Password and confirm password do not match');
   }

@@ -1,10 +1,29 @@
 const db = require('../models');
-const { User, Staff, Project, Task } = db;
-const { verifyEmail, verifyPassword } = require('../services/auth.service');
+const { User, Staff, Project, Task, } = db;
+const { verifyEmail, verifyPassword, verifyUsername } = require('../services/auth.service');
+
+exports.checkPermission = async (req, res, userId, action) => {
+  const userPermission = req.user.permissions;
+  const userToUpdate = await getUserById(userId);
+  if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
+
+  const targetRole = userToUpdate.role;
+  if (targetRole === "admin" && !userPermission.writeAdmin) {
+    return responseHandler.error(res, new Error(`You do not have permission to ${action} an admin user. Ask your Admin.`), 403);
+  }
+  if (targetRole === "employee" && !userPermission.writeEmployee) {
+    return responseHandler.error(res, new Error(`You do not have permission to ${action} an employee user. Ask your Admin.`), 403);
+  }
+  if (targetRole === "super_admin" && (!req.user.secretKey || req.user.secretKey !== req.body.secretKey)) {
+    return responseHandler.error(res, new Error(`You do not have permission or invalid secret key to ${action}.`), 403);
+  }
+};
+
 // Create User
 exports.createUser = async (userData) => {
   try {
     const { username, email, password, confirmPassword, role } = userData;
+
     const existingUser = await User.findOne({
       where: {
         [db.Sequelize.Op.or]: [
@@ -14,30 +33,18 @@ exports.createUser = async (userData) => {
       }
     });
     if (existingUser) return { error: 'Sorry, This email or username already exists.' };
-    if (username.length < 3 || !/[A-Z]/.test(username)) {
-      return { error: 'Username must be at least 3 characters long and include at least one uppercase letter' };
-    }
-    try {
-      verifyEmail(email);
-      verifyPassword(password, confirmPassword);
-    } catch (validationError) {
-      return { error: validationError.message };
-    }
-    if (role) {
-      userData.role = role;
-      const key = await User.findOne({ where: { role: 'super_admin', secretKey: userData.superAdminKey } });
-      if (!key) return { error: 'Invalid super admin key.' };
 
-      if (role === 'super_admin') {
-        userData.secretKey = crypto.randomBytes(32).toString('hex');
-      }
-    } else {
-      userData.role = 'customer';
-    }
+    verifyEmail(email);
+    verifyUsername(username);
+    verifyPassword(password, confirmPassword);
+
+    if (role === 'super_admin') userData.secretKey = crypto.randomBytes(32).toString('hex');
+    userData.role = role || 'customer';
     userData.password = await bcrypt.hash(password, 10);
+
     return await User.create(userData);
   } catch (error) {
-    
+    return { error: error.message };
   }
 };
 
