@@ -4,23 +4,6 @@ const { verifyEmail, verifyPassword, verifyUsername } = require('../services/aut
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
-exports.checkPermission = async (req, res, userId, action) => {
-  const userPermission = req.user.permissions;
-  const userToUpdate = await getUserById(userId);
-  if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
-
-  const targetRole = userToUpdate.role;
-  if (targetRole === "admin" && !userPermission.writeAdmin) {
-    return responseHandler.error(res, new Error(`You do not have permission to ${action} an admin user. Ask your Admin.`), 403);
-  }
-  if (targetRole === "employee" && !userPermission.writeEmployee) {
-    return responseHandler.error(res, new Error(`You do not have permission to ${action} an employee user. Ask your Admin.`), 403);
-  }
-  if (targetRole === "super_admin" && (!req.user.secretKey || req.user.secretKey !== req.body.secretKey)) {
-    return responseHandler.error(res, new Error(`You do not have permission or invalid secret key to ${action}.`), 403);
-  }
-};
-
 exports.createUser = async (userData, options = {}) => {
   try {
     const { username, email, password, confirmPassword, role } = userData;
@@ -90,5 +73,22 @@ exports.deleteUser = async (id) => {
     return { message: 'User deleted successfully' };
   } catch (error) {
     return { error: error.message };    
+  }
+};
+
+exports.checkPermission = async (req, res, userId, action) => {
+  const userPermission = req.user.permissions;
+  const userToUpdate = await getUserById(userId);
+  if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
+
+  const targetRole = userToUpdate.role;
+  if (targetRole === "admin" && !userPermission.writeAdmin) {
+    return responseHandler.error(res, new Error(`You do not have permission to ${action} an admin user. Ask your Admin.`), 403);
+  }
+  if (targetRole === "employee" && !userPermission.writeEmployee) {
+    return responseHandler.error(res, new Error(`You do not have permission to ${action} an employee user. Ask your Admin.`), 403);
+  }
+  if (targetRole === "super_admin" && (!req.user.secretKey || req.user.secretKey !== req.body.secretKey)) {
+    return responseHandler.error(res, new Error(`You do not have permission or invalid secret key to ${action}.`), 403);
   }
 };
