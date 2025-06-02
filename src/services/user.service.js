@@ -3,6 +3,7 @@ const { User } = db;
 const { verifyEmail, verifyPassword, verifyUsername } = require('../services/auth.service');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const responseHandler = require('../utils/responseHandler');
 
 exports.createUser = async (userData, options = {}) => {
   try {
@@ -78,14 +79,19 @@ exports.deleteUser = async (id) => {
 
 exports.checkPermission = async (req, res, userId, action) => {
   const userPermission = req.user.permissions;
-  const userToUpdate = await getUserById(userId);
-  if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
+  let targetRole;
+  if (userId){
+    const userToUpdate = await getUserById(userId);
+    if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
+    targetRole = userToUpdate.role;
+  }
+  targetRole = targetRole || req.body.role;
 
-  const targetRole = userToUpdate.role;
-  if (targetRole === "admin" && !userPermission.writeAdmin) {
+  if (targetRole === "admin" && !userPermission.writeAdmins) {
+    console.log("Admin permission check failed");
     return responseHandler.error(res, new Error(`You do not have permission to ${action} an admin user. Ask your Admin.`), 403);
   }
-  if (targetRole === "employee" && !userPermission.writeEmployee) {
+  if (targetRole === "employee" && !userPermission.writeEmployees) {
     return responseHandler.error(res, new Error(`You do not have permission to ${action} an employee user. Ask your Admin.`), 403);
   }
   if (targetRole === "super_admin" && (!req.user.secretKey || req.user.secretKey !== req.body.secretKey)) {

@@ -16,7 +16,7 @@ const authLogic = async (req) => {
     const permissions = await Permission.findOne({ where: { userId: decoded.id } });
     if (!permissions) throw new Error('Permissions not found');
 
-    req.user = { ...decoded, permissions };
+    req.user = { ...decoded, permissions: permissions.dataValues };
     req.isAdmin = decoded.role === 'admin';
     req.isSuperAdmin = decoded.role === 'super_admin';
     req.isEmployee = decoded.role === 'employee';

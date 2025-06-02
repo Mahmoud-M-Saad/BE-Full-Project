@@ -165,6 +165,9 @@
                 },
                 "role": {
                   "example": "any"
+                },
+                "projectIds": {
+                  "example": "any"
                 }
               }
             }

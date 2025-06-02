@@ -10,10 +10,6 @@ const db = require('../models');
 exports.createStaff = async (req, res) => {
   try {
     const { body } = req;
-
-    const permissionError = await checkPermission(req, res, body.id, "create");
-    if (permissionError) return;
-
     const requiredFields = [
       'username', 'email', 'password', 'confirmPassword', 'role',
       'department', 'experience', 'skills',
@@ -24,6 +20,9 @@ exports.createStaff = async (req, res) => {
     if (missingFields.length > 0) {
       return responseHandler.error(res, new Error(`Missing fields: ${missingFields.join(', ')}`), 400);
     }
+    
+    const permissionError = await checkPermission(req, res, "", "create");
+    if (permissionError) return;
 
     //^ Start transaction
     const t = await db.sequelize.transaction();
