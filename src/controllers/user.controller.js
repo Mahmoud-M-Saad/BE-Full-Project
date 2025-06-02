@@ -1,6 +1,6 @@
 const { checkPermission, createUser, getUsers, getUserById, updateUser, deleteUser } = require('../services/user.service');
 const { createPermission, getDefaultPermissions } = require('../services/permission.service');
-const { createStaffData, getStaffByUserIdWithProjectsTasks, updateStaff } = require('../services/staff.service');
+const { createStaffData, getStaffByUserIdWithProjectsTasks, updateStaffData } = require('../services/staff.service');
 const { getProjectsByStaffIdWithTasks } = require('../services/project.service');
 const responseHandler = require('../utils/responseHandler');
 const { decryptToken } = require('../utils/generateToken');
@@ -109,11 +109,12 @@ exports.updateUser = async (req, res) => {
 
     const userData = { phone, address, secAddress }
     const user = await updateUser(req.params.id, userData);
+    console.log(user);
     if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
 
     if (department || experience || skills || salary || appointmentDate || employmentType) {
       const staffData = { department, experience, skills, salary, appointmentDate, employmentType }
-      await updateStaff(req.params.id, staffData);
+      await updateStaffData(req.params.id, staffData);
     };
 
     return responseHandler.success(res, user, "User updated successfully.");

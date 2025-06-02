@@ -5,6 +5,16 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const responseHandler = require('../utils/responseHandler');
 
+const getUser = async (id) => {
+  try {
+    const user = await User.findOne({ where: { id }, attributes: { exclude: ['password', 'resetPasswordToken', 'resetPasswordExpires', 'createdAt', 'updatedAt'] } });
+    if (!user) return { error: 'User not found' };
+    return user;
+  } catch (error) {
+    return { error: error.message };
+  }
+};
+
 exports.createUser = async (userData, options = {}) => {
   try {
     const { username, email, password, confirmPassword, role } = userData;
@@ -46,9 +56,8 @@ exports.getUsers = async () => {
 
 exports.getUserById = async (id) => {
   try {
-    const user = await User.findOne({where:{ id }, attributes:{exclude:['password', 'resetPasswordToken', 'resetPasswordExpires','createdAt', 'updatedAt'] }});
-    if (!user) return { error: 'User not found' };
-
+    const user = await getUser(id);
+    if (user.error) return { error: user.error };
     return user;
   } catch (error) {
     return { error: error.message };
@@ -60,7 +69,7 @@ exports.updateUser = async (id, userData) => {
     const userUpdated = await User.update(userData, { where: { id } });
     if (!userUpdated[0]) return { error: 'User not found or no changes made' };
 
-    return await getUserById(id);
+    return await getUser(id);
   } catch (error) {
     return { error: error.message };
   }
@@ -80,8 +89,9 @@ exports.deleteUser = async (id) => {
 exports.checkPermission = async (req, res, userId, action) => {
   const userPermission = req.user.permissions;
   let targetRole;
+  console.log(`Checking permissions for action: ${action} on userId: ${userId}`);
   if (userId){
-    const userToUpdate = await getUserById(userId);
+    const userToUpdate = await getUser(userId);
     if (!userToUpdate) return responseHandler.error(res, new Error("User not found"), 404);
     targetRole = userToUpdate.role;
   }
