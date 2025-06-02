@@ -1,12 +1,10 @@
 const db = require('../models');
-const { User, Staff, Project, Task, } = db;
-const { verifyEmail, verifyPassword, verifyUsername } = require('./auth.service');
+const { Staff, Project, Task } = db;
 
-// Create User
-exports.createUser = async (userData, userId) => {
+exports.createStaffData = async (userData, userId, options = {}) => {
   try {
     const staffData = {
-      userId: userId,
+      userId,
       department: userData.department || null,
       experience: userData.experience || null,
       skills: userData.skills || null,
@@ -17,46 +15,47 @@ exports.createUser = async (userData, userId) => {
       taskIds: userData.taskIds || []
     };
 
-    return await Staff.create(staffData);
+    const staff = await Staff.create(staffData, { transaction: options.transaction });
+    if (!staff) throw new Error('Staff creation failed');
+
+    return staff;
   } catch (error) {
     return { error: error.message };
   }
 };
 
-//~ 100%  Get All Users
-exports.getUsers = async () => {
-  return await User.findAll({ attributes: ['id', 'username', 'email', 'phone', 'address', 'secAddress', 'role'] });
-};
-
-//~ 100% Get User by ID 
-exports.getUserById = async (id) => {
+exports.getStaffByUserIdWithProjectsTasks = async (userId) => {
   try {
-    const user = await User.findOne({where:{ id }, attributes:{exclude:['password', 'resetPasswordToken', 'resetPasswordExpires']}});
-    if (!user) throw new Error('User not found');
+    const staff = await Staff.findOne({
+      where: { userId },
+      attributes: { exclude: ['createdAt', 'updatedAt', 'userId', 'projectIds', 'taskIds'] },
+      include: [{
+        model: Project,
+        as: 'projects',
+        through: { attributes: [] },
+        include: [{
+          model: Task,
+          as: 'tasks'
+          // through: { attributes: { exclude: [ 'projectId' ] } },
+        }]
+      }]
+    });
+    if (!staff) return { error: 'Staff not found' };
 
-    const staffData = await Staff.findOne({where:{ userId: id }, attributes:{exclude:['id', 'createdAt', 'updatedAt', 'userId']}});
-    if (!staffData) return user;
-    
-    const [ projects, tasks ] = await Promise.all([
-      staffData.projectIds ? Project.findAll({ where: { id: staffData.projectIds } }) : [],
-      staffData.taskIds ? Task.findAll({ where: { id: staffData.taskIds } }) : []
-    ]);
-    delete staffData.dataValues.projectIds;
-    delete staffData.dataValues.taskIds;
-
-    return { ...user.dataValues, ...staffData.dataValues, projects, tasks };
+    return staff;
   } catch (error) {
     return { error: error.message };
   }
 };
 
-// Update User
-exports.updateUser = async (id, userData) => {
-  await User.update(userData, { where: { id } });
-  return await getUserById(id);
-};
 
-// Delete User
-exports.deleteUser = async (id) => {
-  return await User.destroy({ where: { id } });
+exports.updateStaffData = async (id, userData) => {
+  try {
+    const staffUpdated = await Staff.update(userData, { where: { id } });
+    if (!staffUpdated[0]) return { error: 'Staff not found or no changes made' };
+
+    return await Staff.findByPk(id, { attributes: { exclude: ['createdAt', 'updatedAt', 'userId'] } });
+  } catch (error) {
+    return { error: error.message };
+  }
 };

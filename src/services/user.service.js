@@ -1,6 +1,8 @@
 const db = require('../models');
-const { User, Staff, Project, Task, } = db;
+const { User } = db;
 const { verifyEmail, verifyPassword, verifyUsername } = require('../services/auth.service');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 exports.checkPermission = async (req, res, userId, action) => {
   const userPermission = req.user.permissions;
@@ -19,19 +21,15 @@ exports.checkPermission = async (req, res, userId, action) => {
   }
 };
 
-// Create User
-exports.createUser = async (userData) => {
+exports.createUser = async (userData, options = {}) => {
   try {
     const { username, email, password, confirmPassword, role } = userData;
 
     const existingUser = await User.findOne({
-      where: {
-        [db.Sequelize.Op.or]: [
-          { email: email },
-          { username: username }
-        ]
-      }
+      where: { [db.Sequelize.Op.or]: [{ email }, { username }] },
+      transaction: options.transaction
     });
+
     if (existingUser) return { error: 'Sorry, This email or username already exists.' };
 
     verifyEmail(email);
@@ -42,46 +40,55 @@ exports.createUser = async (userData) => {
     userData.role = role || 'customer';
     userData.password = await bcrypt.hash(password, 10);
 
-    return await User.create(userData);
+    const user = await User.create(userData, { transaction: options.transaction });
+    if (!user) return { error: 'User creation failed, Please check your input data.' };
+
+    return user;
   } catch (error) {
     return { error: error.message };
   }
 };
 
-//~ 100%  Get All Users
 exports.getUsers = async () => {
-  return await User.findAll({ attributes: ['id', 'username', 'email', 'phone', 'address', 'secAddress', 'role'] });
+  try {
+    const users = await User.findAll({ attributes: ['id', 'username', 'email', 'phone', 'address', 'secAddress', 'role'] });
+    if (!users || users.length === 0) return { error: 'No users found' };
+
+    return users;
+  } catch (error) {
+    return { error: error.message };    
+  }
 };
 
-//~ 100% Get User by ID 
 exports.getUserById = async (id) => {
   try {
-    const user = await User.findOne({where:{ id }, attributes:{exclude:['password', 'resetPasswordToken', 'resetPasswordExpires']}});
-    if (!user) throw new Error('User not found');
+    const user = await User.findOne({where:{ id }, attributes:{exclude:['password', 'resetPasswordToken', 'resetPasswordExpires','createdAt', 'updatedAt'] }});
+    if (!user) return { error: 'User not found' };
 
-    const staffData = await Staff.findOne({where:{ userId: id }, attributes:{exclude:['id', 'createdAt', 'updatedAt', 'userId']}});
-    if (!staffData) return user;
-    
-    const [ projects, tasks ] = await Promise.all([
-      staffData.projectIds ? Project.findAll({ where: { id: staffData.projectIds } }) : [],
-      staffData.taskIds ? Task.findAll({ where: { id: staffData.taskIds } }) : []
-    ]);
-    delete staffData.dataValues.projectIds;
-    delete staffData.dataValues.taskIds;
-
-    return { ...user.dataValues, ...staffData.dataValues, projects, tasks };
+    return user;
   } catch (error) {
     return { error: error.message };
   }
 };
 
-// Update User
 exports.updateUser = async (id, userData) => {
-  await User.update(userData, { where: { id } });
-  return await getUserById(id);
+  try {
+    const userUpdated = await User.update(userData, { where: { id } });
+    if (!userUpdated[0]) return { error: 'User not found or no changes made' };
+
+    return await getUserById(id);
+  } catch (error) {
+    return { error: error.message };
+  }
 };
 
-// Delete User
 exports.deleteUser = async (id) => {
-  return await User.destroy({ where: { id } });
+  try {
+    const deleted = await User.destroy({ where: { id } });
+    if (!deleted) return { error: 'User not found' };
+
+    return { message: 'User deleted successfully' };
+  } catch (error) {
+    return { error: error.message };    
+  }
 };

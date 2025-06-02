@@ -2,22 +2,52 @@ const db = require('../models');
 const Task = db.Task;
 
 exports.createTask = async (taskData) => {
-    return await Task.create(taskData);
+    try {
+        const task = await Task.create(taskData);
+        if (!task) return { error: 'Task creation failed' };
+        return task;
+    } catch (error) {
+        return { error: error.message };
+    }
 };
 
 exports.getTasks = async () => {
-    return await Task.findAll();
+    try {
+        const tasks = await Task.findAll();
+        if (!tasks) return { error: 'No tasks found' };
+        return tasks;
+    } catch (error) {
+        return { error: error.message };
+    }
 };
 
 exports.getTaskById = async (id) => {
-    return await Task.findByPk(id);
+    try {
+        const task = await Task.findByPk(id);
+        if (!task) return { error: 'Task not found' };
+        return task;
+    } catch (error) {
+        return { error: error.message };
+    }
 };
 
 exports.updateTask = async (id, taskData) => {
-    await Task.update(taskData, { where: { id } });
-    return await Task.findByPk(id);
+    try {
+        const updated = await Task.update(taskData, { where: { id } });
+        if (!updated[0]) return { error: 'Task not found' };
+        const task = await Task.findByPk(id);
+        return task;
+    } catch (error) {
+        return { error: error.message };
+    }
 };
 
 exports.deleteTask = async (id) => {
-    return await Task.destroy({ where: { id } });
+    try {
+        const deleted = await Task.destroy({ where: { id } });
+        if (!deleted) return { error: 'Task not found' };
+        return { message: 'Task deleted successfully' };
+    } catch (error) {
+        return { error: error.message };
+    }
 };

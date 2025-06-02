@@ -27,12 +27,18 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
-// Define associations (example)
-db.Project && db.User && db.Project.belongsTo(db.User, { foreignKey: 'userId', as: 'owner' });
+// Associations
+
+// Staff <-> Project (Many-to-Many)
+db.Staff && db.Project && db.Staff.belongsToMany(db.Project, { through: 'StaffProjects', foreignKey: 'staffId', otherKey: 'projectId', as: 'projects' });
+db.Project && db.Staff && db.Project.belongsToMany(db.Staff, { through: 'StaffProjects', foreignKey: 'projectId', otherKey: 'staffId', as: 'users' });
+
+// Project <-> Task (One-to-Many)
+db.Project && db.Task && db.Project.hasMany(db.Task, { foreignKey: 'projectId', as: 'tasks' });
+db.Task && db.Project && db.Task.belongsTo(db.Project, { foreignKey: 'projectId', as: 'project' });
+
+// Staff and Permission <-> User (One-to-One)
 db.Staff && db.User && db.Staff.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
 db.Permission && db.User && db.Permission.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
-db.Task && db.Project && db.Task.belongsTo(db.Project, { foreignKey: 'projectId' });
-db.Staff && db.Project && db.Staff.belongsToMany(db.Project, { through: 'StaffProjects', foreignKey: 'staffId', otherKey: 'projectId', as: 'projects' });
-db.Staff && db.Task && db.Staff.belongsToMany(db.Task, { through: 'StaffTasks', foreignKey: 'staffId', otherKey: 'taskId', as: 'tasks' });
 
 module.exports = db;

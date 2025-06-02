@@ -147,7 +147,37 @@
         }
       }
     },
-    "/v1/user/createUser": {
+    "/v1/user/add-staff": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "example": "any"
+                },
+                "permissions": {
+                  "example": "any"
+                },
+                "role": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/v1/user/add-customer": {
       "post": {
         "description": "",
         "parameters": [
@@ -199,6 +229,42 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "phone": {
+                  "example": "any"
+                },
+                "address": {
+                  "example": "any"
+                },
+                "secAddress": {
+                  "example": "any"
+                },
+                "department": {
+                  "example": "any"
+                },
+                "experience": {
+                  "example": "any"
+                },
+                "skills": {
+                  "example": "any"
+                },
+                "salary": {
+                  "example": "any"
+                },
+                "appointmentDate": {
+                  "example": "any"
+                },
+                "employmentType": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -215,52 +281,6 @@
             "in": "path",
             "required": true,
             "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/v1/user/permissions/{userId}": {
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      },
-      "put": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "secretKey": {
-                  "example": "any"
-                }
-              }
-            }
           }
         ],
         "responses": {
