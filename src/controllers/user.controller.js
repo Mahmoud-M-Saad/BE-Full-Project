@@ -43,6 +43,11 @@ exports.createStaff = async (req, res) => {
       const permissionData = await createPermission(body.permissions, { transaction: t });
       if (permissionData?.error) throw new Error(permissionData.error);
 
+      // ✅ Assign existing projects to staff
+      if (Array.isArray(body.projectIds) && body.projectIds.length > 0) {
+        await staffData.addProjects(body.projectIds, { transaction: t });
+      }
+
       await t.commit();
       return responseHandler.created(res, user, "User created successfully.");
     } catch (err) {
