@@ -8,7 +8,7 @@ const { isSuperAdmin, isAuth } = require('../middlewares/auth.middleware');
 
 //! basic CRUD routes
 router.post('/add-staff', isAuth, validateAdminCreate, createStaff);
-router.post('/add-customer', validateAdminCreate, createCustomer);
+router.post('/add-customer', createCustomer);
 router.get('/', isAuth, getUsers);
 router.get('/:id', isAuth, getUserById);
 router.put('/:id', isAuth, updateUser);
