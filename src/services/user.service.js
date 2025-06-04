@@ -55,7 +55,7 @@ exports.getUsers = async () => {
   }
 };
 
-exports.getUserById = async (id) => {
+exports.getUserDataById = async (id) => {
   try {
     const user = await getUser(id);
     if (user.error) return { error: user.error };
@@ -65,7 +65,7 @@ exports.getUserById = async (id) => {
   }
 };
 
-exports.updateUser = async (id, userData) => {
+exports.updateUserData = async (id, userData) => {
   try {
     const userUpdated = await User.update(userData, { where: { id } });
     if (!userUpdated[0]) return { error: 'User not found or no changes made' };
@@ -76,7 +76,7 @@ exports.updateUser = async (id, userData) => {
   }
 };
 
-exports.deleteUser = async (id) => {
+exports.deleteUserData = async (id) => {
   try {
     const deleted = await User.destroy({ where: { id } });
     if (!deleted) return { error: 'User not found' };

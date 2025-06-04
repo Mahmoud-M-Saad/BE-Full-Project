@@ -1,4 +1,4 @@
-const { checkPermission, createUser, getUsers, getUserById, updateUser, deleteUser } = require('../services/user.service');
+const { checkPermission, createUser, getUsers, getUserDataById, updateUserData, deleteUserData } = require('../services/user.service');
 const { createPermission, getDefaultPermissions } = require('../services/permission.service');
 const { createStaffData, getStaffByUserIdWithProjectsTasks, updateStaffData } = require('../services/staff.service');
 const { getProjectsByStaffIdWithTasks } = require('../services/project.service');
@@ -81,7 +81,7 @@ const createCustomer = async (req, res) => {
 };
 
 //~ 100% Get All Users
-const getUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     const users = await getUsers();
     return responseHandler.success(res, users);
@@ -93,7 +93,7 @@ const getUsers = async (req, res) => {
 //~ 100% Get User by ID
 const getUserById = async (req, res) => {
   try {
-    const user = await getUserById(req.params.id);
+    const user = await getUserDataById(req.params.id);
 
     if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
     
@@ -116,7 +116,7 @@ const updateUser = async (req, res) => {
     if (permissionError) return;
 
     const userData = { phone, address, secAddress }
-    const user = await updateUser(req.params.id, userData);
+    const user = await updateUserData(req.params.id, userData);
     console.log(user);
     if (user.error) return responseHandler.error(res, new Error('User not found'), 404);
 
@@ -137,7 +137,7 @@ const deleteUser = async (req, res) => {
     const permissionError = await checkPermission(req, res, req.params.id, "delete");
     if (permissionError) return;
 
-    const result = await deleteUser(req.params.id);
+    const result = await deleteUserData(req.params.id);
     if (!result) return responseHandler.error(res, new Error('User not found'), 404);
 
     return responseHandler.success(res, null, "User deleted successfully.");
@@ -150,7 +150,7 @@ const deleteUser = async (req, res) => {
 module.exports = {
   createStaff,
   createCustomer,
-  getUsers,
+  getAllUsers,
   getUserById,
   updateUser,
   deleteUser
