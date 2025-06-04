@@ -19,20 +19,21 @@ exports.createUser = async (userData, options = {}) => {
   try {
     const { username, email, password, confirmPassword, role } = userData;
 
-    const existingUser = await User.findOne({
-      where: { [db.Sequelize.Op.or]: [{ email }, { username }] },
-      transaction: options.transaction
-    });
+    if (!role === "customer") {      
+      const existingUser = await User.findOne({
+        where: { [db.Sequelize.Op.or]: [{ email }, { username }] },
+        transaction: options.transaction
+      });      
+      if (existingUser) return { error: 'Sorry, This email or username already exists.' };
 
-    if (existingUser) return { error: 'Sorry, This email or username already exists.' };
+      verifyEmail(email);
+      verifyUsername(username);
+      verifyPassword(password, confirmPassword);
 
-    verifyEmail(email);
-    verifyUsername(username);
-    verifyPassword(password, confirmPassword);
-
-    if (role === 'super_admin') userData.secretKey = crypto.randomBytes(32).toString('hex');
-    userData.role = role || 'customer';
-    userData.password = await bcrypt.hash(password, 10);
+      if (role === 'super_admin') userData.secretKey = crypto.randomBytes(32).toString('hex');
+      userData.role = role || 'customer';
+      userData.password = await bcrypt.hash(password, 10);
+    }
 
     const user = await User.create(userData, { transaction: options.transaction });
     if (!user) return { error: 'User creation failed, Please check your input data.' };

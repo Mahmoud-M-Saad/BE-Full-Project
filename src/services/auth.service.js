@@ -66,6 +66,7 @@ const signup = async (userData) => {
       userData.role = 'customer';
     }
     userData.password = await bcrypt.hash(password, 10);
+    userData.confirmPassword = await bcrypt.hash(confirmPassword, 10);
 
     const { token } = await encryptToken(userData);
     const creationLink = `${frontEndLink}/confirm-signup?creationToken=${token}`;
