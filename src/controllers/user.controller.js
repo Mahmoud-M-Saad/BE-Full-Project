@@ -63,11 +63,10 @@ const createStaff = async (req, res) => {
 const createCustomer = async (req, res) => {
   try {
     const { creation_token } = req.headers;
-    const { role } = req.body;
     const userData = await decryptToken(creation_token);
 
     let user;
-    if (role === "super_admin" || role === "admin" || role === "employee" ) {
+    if (userData.role === "super_admin" || userData.role === "admin" || userData.role === "employee" ) {
       user = await createStaff(req,res);
     }else{
       user = await createUser(userData);
