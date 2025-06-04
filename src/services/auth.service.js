@@ -35,7 +35,6 @@ const verifyPassword = (password, confirmPassword) => {
 
 const signup = async (userData) => {
   try {
-    console.log("INNNNNNNNNNN");
     const { username, email, password, confirmPassword, role } = userData;
     const existingUser = await User.findOne({
       where: {
@@ -70,7 +69,7 @@ const signup = async (userData) => {
 
     const { token } = await encryptToken(userData);
     const creationLink = `${frontEndLink}/confirm-signup?creationToken=${token}`;
-    const info = await sendResetEmail(email, creationLink, username);
+    const info = await sendResetEmail(email, creationLink, username, 'create your account', 'Login Now');
     return { success: true };
   } catch (err) {
     console.error(`[${timestamp} - ${ctx}] signup fn. Error: `, err.message);
@@ -122,7 +121,7 @@ const forgotPassword = async (userEmail) => {
     if (!savedUser) return { error: 'Failed to save reset token.' };
 
     const resetLink = `${frontEndLink}/reset-password?resetToken=${resetToken}`;
-    const info = await sendResetEmail(userEmail, resetLink, user.username);
+    const info = await sendResetEmail(userEmail, resetLink, user.username, "reset your password", "Reset Password");
     console.log(`Reset email sent: ${info}`);
 
     return { success: true };

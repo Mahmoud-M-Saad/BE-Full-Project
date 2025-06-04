@@ -3,7 +3,7 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const { user, pass } = require('../../config/config').email; // Ensure you have your email credentials in the config
 
-exports.sendResetEmail = async (to, resetLink, username) => {
+exports.sendResetEmail = async (to, resetLink, username, emailPurpose, buttonText) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user, pass }
@@ -14,6 +14,8 @@ exports.sendResetEmail = async (to, resetLink, username) => {
   htmlTemplate = htmlTemplate
     .replace('{{username}}', username)
     .replace('{{resetLink}}', resetLink)
+    .replace('{{purpose}}', emailPurpose)
+    .replace('{{button}}', buttonText)
     .replace('{{date}}', new Date().toDateString());
 
   const mailOptions = {
