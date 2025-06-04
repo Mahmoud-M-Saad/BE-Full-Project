@@ -7,7 +7,7 @@ const { decryptToken } = require('../utils/generateToken');
 const db = require('../models');
 
 //~ 100% Create User
-exports.createStaff = async (req, res) => {
+const createStaff = async (req, res) => {
   try {
     const { body } = req;
     const requiredFields = [
@@ -60,12 +60,20 @@ exports.createStaff = async (req, res) => {
 };
 
 //~ 100% Create User by Sign Up Link
-exports.createCustomer = async (req, res) => {
+const createCustomer = async (req, res) => {
   try {
     const { creation_token } = req.headers;
+    const { role } = req.body;
     const userData = await decryptToken(creation_token);
-    
-    const user = await createUser(userData);
+
+    let user;
+    if (role === "super_admin" || role === "admin" || role === "employee" ) {
+      user = await createStaff(req,res);
+    }else{
+      user = await createUser(userData);
+    }
+
+    if (user.error) return responseHandler.error(res, new Error(user.error), 400);
     return responseHandler.created(res, user, "User created successfully.");
   } catch (err) {
     return responseHandler.error(res, err, 400);
@@ -73,7 +81,7 @@ exports.createCustomer = async (req, res) => {
 };
 
 //~ 100% Get All Users
-exports.getUsers = async (req, res) => {
+const getUsers = async (req, res) => {
   try {
     const users = await getUsers();
     return responseHandler.success(res, users);
@@ -83,7 +91,7 @@ exports.getUsers = async (req, res) => {
 };
 
 //~ 100% Get User by ID
-exports.getUserById = async (req, res) => {
+const getUserById = async (req, res) => {
   try {
     const user = await getUserById(req.params.id);
 
@@ -100,7 +108,7 @@ exports.getUserById = async (req, res) => {
 };
 
 //~ 100% Update User
-exports.updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
     const { phone, address, secAddress, department, experience, skills, salary, appointmentDate, employmentType } = req.body;
     
@@ -124,7 +132,7 @@ exports.updateUser = async (req, res) => {
 };
 
 //~ 100% Delete User
-exports.deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
   try {
     const permissionError = await checkPermission(req, res, req.params.id, "delete");
     if (permissionError) return;
@@ -137,3 +145,13 @@ exports.deleteUser = async (req, res) => {
     return responseHandler.error(res, err);
   }
 };
+
+
+module.exports = {
+  createStaff,
+  createCustomer,
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser
+}
