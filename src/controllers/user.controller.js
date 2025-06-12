@@ -64,6 +64,7 @@ const createCustomer = async (req, res) => {
   try {
     const { creation_token } = req.headers;
     const userData = await decryptToken(creation_token);
+    req.body = userData;
 
     let user;
     if (userData.role === "super_admin" || userData.role === "admin" || userData.role === "employee" ) {
